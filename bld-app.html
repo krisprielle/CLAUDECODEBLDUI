@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BLD — Fitness Community App</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --blue: #1a6cff;
+    --blue-light: #4d8fff;
+    --blue-dark: #0040cc;
+    --bg: #080808;
+    --surface: #111114;
+    --surface2: #17171b;
+    --glass: rgba(255,255,255,0.055);
+    --glass-border: rgba(255,255,255,0.09);
+    --glass-blue: rgba(26,108,255,0.14);
+    --glass-blue-border: rgba(26,108,255,0.28);
+    --text: #ffffff;
+    --text-muted: rgba(255,255,255,0.55);
+    --text-dim: rgba(255,255,255,0.3);
+  }
+
+  body {
+    background: #0d0d0f;
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: auto;
+  }
+
+  /* ── Layout ── */
+  .page-wrapper {
+    display: flex;
+    gap: 32px;
+    padding: 48px 48px 80px;
+    min-width: max-content;
+    align-items: flex-start;
+  }
+
+  .screen {
+    width: 390px;
+    height: 844px;
+    background: var(--bg);
+    border-radius: 48px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(255,255,255,0.07);
+    box-shadow: 0 32px 80px rgba(0,0,0,0.7), inset 0 0.5px 0 rgba(255,255,255,0.06);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .screen-inner {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 80px;
+  }
+
+  .scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .scroll-area::-webkit-scrollbar { display: none; }
+
+  /* ── Glassmorphism ── */
+  .glass { background: var(--glass); border: 1px solid var(--glass-border); backdrop-filter: blur(20px); }
+  .glass-blue { background: var(--glass-blue); border: 1px solid var(--glass-blue-border); }
+  .glass-header {
+    background: rgba(8,8,8,0.8);
+    backdrop-filter: blur(30px);
+    border-bottom: 1px solid var(--glass-border);
+    padding: 56px 20px 16px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  /* ── Typography ── */
+  .bebas { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.06em; }
+  .gradient-text {
+    background: linear-gradient(135deg, #6aa3ff, #1a6cff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .label-caps {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  /* ── Buttons ── */
+  .btn-blue {
+    background: linear-gradient(135deg, #1a6cff, #4d8fff);
+    color: white;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(26,108,255,0.4);
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+  }
+  .card-blue {
+    background: var(--glass-blue);
+    border: 1px solid var(--glass-blue-border);
+    border-radius: 20px;
+  }
+
+  /* ── Bottom nav ── */
+  .bottom-nav {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 0 12px 20px;
+    z-index: 20;
+  }
+  .nav-bar {
+    background: rgba(10,10,10,0.88);
+    backdrop-filter: blur(40px);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 22px;
+    padding: 8px 4px;
+    display: flex;
+    justify-content: space-around;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 6px 10px;
+    border-radius: 14px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .nav-item.active { background: rgba(26,108,255,0.15); }
+  .nav-item svg { width: 20px; height: 20px; }
+  .nav-item.active svg { stroke: #4d8fff; }
+  .nav-item:not(.active) svg { stroke: rgba(255,255,255,0.3); }
+  .nav-label {
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+  }
+  .nav-item.active .nav-label { color: #4d8fff; }
+
+  /* ── Screen labels ── */
+  .screen-label {
+    text-align: center;
+    color: rgba(255,255,255,0.25);
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 16px;
+    font-family: monospace;
+  }
+
+  /* ── Page header ── */
+  .page-title {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .page-title h1 { font-size: 38px; line-height: 1; }
+  .page-title p { font-size: 11px; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; }
+
+  /* ─────────────────────────────────── FEED ── */
+  .stories {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .story-item { display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 54px; }
+  .story-ring {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: linear-gradient(135deg, #1a6cff, #4d8fff);
+    padding: 2px;
+  }
+  .story-inner {
+    width: 100%; height: 100%; border-radius: 50%;
+    background: var(--bg);
+    padding: 2px;
+  }
+  .story-avatar {
+    width: 100%; height: 100%; border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+  .story-add {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px dashed rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.3);
+    font-size: 22px;
+    line-height: 1;
+  }
+  .story-name { font-size: 9px; color: var(--text-dim); }
+
+  .masonry { display: flex; gap: 10px; padding: 0 12px 12px; }
+  .masonry-col { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+  .masonry-col:last-child { margin-top: 40px; }
+
+  .post-card {
+    border-radius: 18px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+  .post-img {
+    position: relative;
+    overflow: hidden;
+  }
+  .post-img img { width: 100%; display: block; object-fit: cover; }
+  .post-img .overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+  }
+  .streak-badge {
+    position: absolute; top: 8px; right: 8px;
+    background: rgba(10,10,10,0.75);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 3px 8px;
+    display: flex; align-items: center; gap: 4px;
+    font-size: 10px; font-weight: 700; color: white;
+  }
+  .user-badge {
+    position: absolute; bottom: 8px; left: 8px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .user-badge img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2); }
+  .user-badge span { font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.85); }
+  .post-body { padding: 8px 10px 10px; }
+  .post-caption { font-size: 10px; color: rgba(255,255,255,0.6); line-height: 1.5; margin-bottom: 8px; }
+  .post-actions { display: flex; justify-content: space-between; align-items: center; }
+  .action-group { display: flex; gap: 10px; align-items: center; }
+  .action-btn { display: flex; align-items: center; gap: 4px; background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.5); font-size: 10px; font-family: inherit; }
+  .action-btn svg { width: 14px; height: 14px; stroke: rgba(255,255,255,0.5); fill: none; }
+
+  /* ─────────────────────────────────── BLD AI ── */
+  .hero-card {
+    border-radius: 20px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(26,108,255,0.22), rgba(26,108,255,0.07));
+    border: 1px solid rgba(26,108,255,0.3);
+    box-shadow: 0 8px 30px rgba(26,108,255,0.12), inset 0 0.5px 0 rgba(255,255,255,0.1);
+    margin: 16px;
+  }
+  .hero-glow {
+    position: absolute; top: -30px; right: -30px;
+    width: 120px; height: 120px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(26,108,255,0.4), transparent 70%);
+  }
+  .hero-icon {
+    width: 44px; height: 44px; border-radius: 14px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .hero-icon svg { width: 22px; height: 22px; stroke: white; fill: none; }
+  .hero-content { display: flex; gap: 14px; align-items: flex-start; position: relative; }
+  .hero-text h3 { font-size: 15px; font-weight: 700; color: white; margin-bottom: 4px; }
+  .hero-text p { font-size: 11px; color: rgba(255,255,255,0.6); line-height: 1.5; }
+
+  .goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .goal-btn {
+    padding: 14px; border-radius: 18px; text-align: left; cursor: pointer;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    transition: all 0.2s;
+  }
+  .goal-btn.active {
+    background: rgba(26,108,255,0.14);
+    border-color: rgba(26,108,255,0.4);
+    box-shadow: 0 0 18px rgba(26,108,255,0.14);
+  }
+  .goal-icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+  }
+  .goal-icon svg { width: 20px; height: 20px; stroke: white; fill: none; stroke-width: 2.2; }
+  .goal-label { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.85); }
+
+  .days-row { display: flex; gap: 10px; }
+  .day-btn {
+    flex: 1; padding: 14px 0; border-radius: 18px; text-align: center;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    color: rgba(255,255,255,0.4);
+    font-family: inherit;
+  }
+  .day-btn.active {
+    background: rgba(26,108,255,0.14);
+    border-color: rgba(26,108,255,0.4);
+    color: #4d8fff;
+  }
+
+  .split-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; border-radius: 18px; cursor: pointer;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    margin-bottom: 8px;
+  }
+  .split-name { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85); margin-bottom: 3px; }
+  .split-meta { font-size: 10px; color: rgba(255,255,255,0.35); }
+  .split-badge {
+    display: inline-block; margin-top: 6px;
+    padding: 2px 8px; border-radius: 20px; font-size: 9px; font-weight: 600;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.45);
+  }
+
+  /* ─────────────────────────────────── MATCH ── */
+  .match-card {
+    margin: 8px 14px 0;
+    border-radius: 28px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.09);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .match-photo { position: relative; height: 55%; flex-shrink: 0; }
+  .match-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .match-photo .grad { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.15) 50%, transparent); }
+  .match-pct {
+    position: absolute; top: 12px; right: 12px;
+    background: rgba(10,10,10,0.75); backdrop-filter: blur(14px);
+    border: 1px solid rgba(26,108,255,0.35);
+    border-radius: 20px; padding: 5px 12px;
+    font-size: 12px; font-weight: 700; color: #4d8fff;
+  }
+  .match-name-area { position: absolute; bottom: 0; left: 0; right: 0; padding: 16px; }
+  .match-name { font-size: 30px; font-weight: 900; color: white; letter-spacing: 0.04em; font-family: 'Bebas Neue', sans-serif; }
+  .match-loc { display: flex; align-items: center; gap: 5px; color: rgba(255,255,255,0.65); font-size: 12px; margin-top: 2px; }
+  .match-loc svg { width: 13px; height: 13px; stroke: rgba(255,255,255,0.65); fill: none; }
+
+  .match-details { padding: 12px; display: flex; flex-direction: column; gap: 10px; flex: 1; overflow: hidden; }
+  .match-gym {
+    display: flex; gap: 10px; align-items: center;
+    padding: 10px 12px; border-radius: 14px;
+    background: rgba(26,108,255,0.1); border: 1px solid rgba(26,108,255,0.2);
+  }
+  .match-gym-icon {
+    width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+    background: linear-gradient(135deg, #1a6cff, #4d8fff);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .match-gym-icon svg { width: 16px; height: 16px; stroke: white; fill: none; }
+  .match-gym-info p:first-child { font-size: 9px; color: rgba(255,255,255,0.3); letter-spacing: 2px; text-transform: uppercase; }
+  .match-gym-info p:last-child { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.85); }
+  .match-bio { font-size: 11px; color: rgba(255,255,255,0.5); line-height: 1.5; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    padding: 4px 10px; border-radius: 20px; font-size: 9px; font-weight: 500;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.09);
+    color: rgba(255,255,255,0.55);
+  }
+  .tag.blue { background: rgba(26,108,255,0.12); border-color: rgba(26,108,255,0.25); color: #4d8fff; }
+
+  .match-actions {
+    padding: 14px 20px;
+    background: rgba(8,8,8,0.9);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex; justify-content: center; align-items: center; gap: 24px;
+    position: absolute; bottom: 80px; left: 0; right: 0;
+  }
+  .action-circle {
+    border-radius: 50%; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .action-circle svg { fill: none; }
+  .action-circle.sm { width: 54px; height: 54px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+  .action-circle.sm svg { width: 26px; height: 26px; }
+  .action-circle.lg { width: 68px; height: 68px; background: linear-gradient(135deg, #1a6cff, #4d8fff); box-shadow: 0 4px 24px rgba(26,108,255,0.5); }
+  .action-circle.lg svg { width: 32px; height: 32px; stroke: white; stroke-width: 2.5; }
+  .action-circle.x svg { stroke: #f87171; stroke-width: 2.5; }
+  .action-circle.msg { background: rgba(26,108,255,0.12); border: 1px solid rgba(26,108,255,0.25); }
+  .action-circle.msg svg { stroke: #4d8fff; stroke-width: 2.2; }
+
+  /* ─────────────────────────────────── SEARCH ── */
+  .search-input-wrap { position: relative; margin: 14px 16px 0; }
+  .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: rgba(255,255,255,0.3); fill: none; }
+  .search-input {
+    width: 100%; padding: 12px 16px 12px 42px;
+    background: rgba(255,255,255,0.055); border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 14px; color: white; font-family: 'DM Sans', sans-serif; font-size: 13px;
+    outline: none;
+  }
+  .search-input::placeholder { color: rgba(255,255,255,0.28); }
+  .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .cat-card {
+    padding: 14px; border-radius: 18px; cursor: pointer; text-align: left;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+  }
+  .cat-icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: linear-gradient(135deg, #1a6cff, #4d8fff);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 14px rgba(26,108,255,0.3);
+  }
+  .cat-icon svg { width: 18px; height: 18px; stroke: white; fill: none; stroke-width: 2.2; }
+  .cat-label { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.85); }
+  .cat-count { font-size: 10px; color: rgba(255,255,255,0.3); margin-top: 2px; }
+  .trending-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .trending-tag {
+    padding: 7px 14px; border-radius: 20px; font-size: 11px; font-weight: 500; cursor: pointer;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.6);
+  }
+  .recent-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; border-radius: 18px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+    margin-bottom: 8px;
+  }
+  .recent-icon {
+    width: 38px; height: 38px; border-radius: 12px; flex-shrink: 0;
+    background: rgba(26,108,255,0.1); border: 1px solid rgba(26,108,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .recent-icon svg { width: 16px; height: 16px; stroke: #4d8fff; fill: none; }
+  .recent-name { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.8); }
+  .recent-detail { font-size: 10px; color: rgba(255,255,255,0.3); }
+  .recent-x { margin-left: auto; color: rgba(255,255,255,0.2); font-size: 18px; background: none; border: none; cursor: pointer; }
+
+  /* ─────────────────────────────────── CALENDAR ── */
+  .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .cal-nav-btn {
+    width: 32px; height: 32px; border-radius: 10px; border: none; cursor: pointer;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cal-nav-btn svg { width: 16px; height: 16px; stroke: rgba(255,255,255,0.6); fill: none; }
+  .cal-month { font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.85); font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; }
+  .cal-days-header { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; margin-bottom: 6px; }
+  .cal-day-label { text-align: center; font-size: 9px; color: rgba(255,255,255,0.25); font-weight: 500; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+  .cal-day {
+    aspect-ratio: 1; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; cursor: pointer; position: relative;
+    background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.2);
+  }
+  .cal-day.today { background: rgba(26,108,255,0.2); border-color: rgba(26,108,255,0.5); color: #4d8fff; box-shadow: 0 0 12px rgba(26,108,255,0.2); }
+  .cal-day.done { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.28); color: #4ade80; }
+  .cal-day.has-workout { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); }
+  .cal-check {
+    position: absolute; top: -4px; right: -4px;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: #22c55e; border: 2px solid var(--bg);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cal-check svg { width: 8px; height: 8px; stroke: white; fill: none; stroke-width: 3; }
+  .cal-dot { position: absolute; bottom: 3px; width: 4px; height: 4px; border-radius: 50%; background: #1a6cff; }
+
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .stat-box {
+    padding: 12px; border-radius: 18px; text-align: center;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+  }
+  .stat-box.accent { background: rgba(26,108,255,0.12); border-color: rgba(26,108,255,0.25); }
+  .stat-val { font-size: 24px; font-weight: 900; color: rgba(255,255,255,0.85); font-family: 'Bebas Neue', sans-serif; }
+  .stat-box.accent .stat-val { color: #4d8fff; }
+  .stat-lbl { font-size: 9px; color: rgba(255,255,255,0.28); text-transform: uppercase; letter-spacing: 2px; }
+  .stat-box.accent .stat-lbl { color: rgba(77,143,255,0.6); }
+
+  .workout-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .workout-title { font-size: 20px; font-weight: 900; color: rgba(255,255,255,0.9); font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; }
+  .add-btn {
+    width: 32px; height: 32px; border-radius: 10px; border: none; cursor: pointer;
+    background: linear-gradient(135deg, #1a6cff, #4d8fff);
+    box-shadow: 0 0 12px rgba(26,108,255,0.3);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .add-btn svg { width: 16px; height: 16px; stroke: white; fill: none; }
+  .exercise-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 14px; margin-bottom: 8px;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
+  }
+  .exercise-item.done { background: rgba(34,197,94,0.07); border-color: rgba(34,197,94,0.18); }
+  .ex-check {
+    width: 24px; height: 24px; border-radius: 8px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  }
+  .ex-check.done { background: #22c55e; border: none; }
+  .ex-check svg { width: 13px; height: 13px; stroke: white; fill: none; stroke-width: 3; }
+  .ex-name { flex: 1; font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.8); }
+  .ex-name.done { color: rgba(255,255,255,0.3); text-decoration: line-through; }
+  .ex-sets { font-size: 10px; color: rgba(255,255,255,0.3); font-weight: 500; }
+
+  /* ─────────────────────────────────── PROFILE ── */
+  .profile-banner {
+    height: 110px; position: relative; overflow: hidden;
+    background: linear-gradient(135deg, rgba(26,108,255,0.28), rgba(26,108,255,0.07));
+    border-bottom: 1px solid rgba(26,108,255,0.18);
+  }
+  .banner-glow1 {
+    position: absolute; top: -40px; left: -30px;
+    width: 160px; height: 160px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(26,108,255,0.4), transparent 65%);
+  }
+  .banner-glow2 {
+    position: absolute; bottom: -30px; right: 20px;
+    width: 100px; height: 100px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(77,143,255,0.3), transparent 65%);
+  }
+  .profile-info { padding: 0 18px 16px; background: var(--bg); position: relative; }
+  .profile-top { display: flex; align-items: flex-end; gap: 14px; padding-top: 12px; margin-bottom: 14px; }
+  .profile-avatar-wrap { position: relative; margin-top: -44px; }
+  .profile-avatar {
+    width: 82px; height: 82px; border-radius: 24px; object-fit: cover;
+    border: 3px solid rgba(26,108,255,0.5);
+    box-shadow: 0 0 22px rgba(26,108,255,0.3);
+  }
+  .avatar-flame {
+    position: absolute; bottom: -4px; right: -4px;
+    width: 26px; height: 26px; border-radius: 9px;
+    background: linear-gradient(135deg, #1a6cff, #4d8fff);
+    border: 2px solid var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 10px rgba(26,108,255,0.4);
+  }
+  .avatar-flame svg { width: 13px; height: 13px; stroke: white; fill: none; }
+  .profile-name h1 { font-size: 22px; font-weight: 900; color: white; font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; }
+  .profile-name p { font-size: 11px; color: rgba(255,255,255,0.3); }
+  .profile-btns { display: flex; gap: 10px; margin-bottom: 14px; }
+  .edit-btn {
+    flex: 1; padding: 10px; border-radius: 14px; border: none; cursor: pointer;
+    background: rgba(26,108,255,0.12); border: 1px solid rgba(26,108,255,0.3);
+    color: #4d8fff; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600;
+  }
+  .icon-btn {
+    width: 40px; height: 40px; border-radius: 12px; border: none; cursor: pointer;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .icon-btn svg { width: 16px; height: 16px; stroke: rgba(255,255,255,0.5); fill: none; }
+  .followers-row {
+    display: flex; align-items: center; justify-content: space-around;
+    padding: 14px; border-radius: 18px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+  }
+  .follower-stat { text-align: center; }
+  .follower-val { font-size: 20px; font-weight: 900; color: rgba(255,255,255,0.88); font-family: 'Bebas Neue', sans-serif; }
+  .follower-lbl { font-size: 9px; color: rgba(255,255,255,0.28); text-transform: uppercase; letter-spacing: 2px; }
+  .follower-divider { width: 1px; height: 32px; background: rgba(255,255,255,0.08); }
+
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-card {
+    padding: 14px; border-radius: 18px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+  }
+  .stat-icon {
+    width: 38px; height: 38px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+  }
+  .stat-icon svg { width: 18px; height: 18px; stroke: white; fill: none; }
+  .stat-card-label { font-size: 9px; color: rgba(255,255,255,0.28); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 2px; }
+  .stat-card-val { font-size: 17px; font-weight: 900; color: rgba(255,255,255,0.85); font-family: 'Bebas Neue', sans-serif; }
+
+  .achievements-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+  .achievement {
+    aspect-ratio: 1; border-radius: 18px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
+    opacity: 0.4;
+  }
+  .achievement.unlocked { background: rgba(26,108,255,0.1); border-color: rgba(26,108,255,0.24); opacity: 1; }
+  .achievement span { font-size: 22px; }
+  .achievement p { font-size: 8px; text-align: center; color: rgba(255,255,255,0.5); font-weight: 500; padding: 0 4px; line-height: 1.3; }
+
+  .activity-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; border-radius: 18px; margin-bottom: 8px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+  }
+  .activity-icon {
+    width: 38px; height: 38px; border-radius: 12px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .activity-title { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.8); }
+  .activity-time { font-size: 10px; color: rgba(255,255,255,0.3); }
+
+  /* ── Section spacing ── */
+  .section { padding: 0 16px; margin-bottom: 20px; }
+  .section-title { margin-bottom: 12px; }
+
+  /* ── Page header band ── */
+  .header-row { display: flex; align-items: flex-start; justify-content: space-between; }
+  .notif-btn {
+    width: 38px; height: 38px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(26,108,255,0.16); border: 1px solid rgba(26,108,255,0.3);
+    box-shadow: 0 0 14px rgba(26,108,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    position: relative; flex-shrink: 0;
+  }
+  .notif-btn svg { width: 16px; height: 16px; stroke: #4d8fff; fill: none; }
+  .notif-dot {
+    position: absolute; top: -2px; right: -2px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: #1a6cff; border: 2px solid var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 7px; font-weight: 800; color: white;
+  }
+
+  /* ── Today bar ── */
+  .today-bar {
+    margin: 8px 16px 0;
+    padding: 10px 14px; border-radius: 18px;
+    background: rgba(26,108,255,0.1); border: 1px solid rgba(26,108,255,0.25);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .today-bar span { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.8); }
+  .new-badge {
+    padding: 4px 12px; border-radius: 20px;
+    background: linear-gradient(135deg, #1a6cff, #4d8fff);
+    font-size: 11px; font-weight: 700; color: white;
+  }
+
+  /* ── Generate button ── */
+  .generate-btn {
+    width: 100%; padding: 14px; border-radius: 18px; border: none; cursor: pointer;
+    background: linear-gradient(135deg, #1a6cff, #4d8fff);
+    color: white; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 4px 22px rgba(26,108,255,0.45), inset 0 0.5px 0 rgba(255,255,255,0.1);
+  }
+  .generate-btn svg { width: 18px; height: 18px; stroke: white; fill: none; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════ NAV ICONS SVG DEFS -->
+<svg style="display:none">
+  <defs>
+    <symbol id="ico-home" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></symbol>
+    <symbol id="ico-zap" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+    <symbol id="ico-users" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></symbol>
+    <symbol id="ico-search" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+    <symbol id="ico-cal" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></symbol>
+    <symbol id="ico-user" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+    <symbol id="ico-bell" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></symbol>
+    <symbol id="ico-sparkles" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/><path d="M19 3l.75 2.25L22 6l-2.25.75L19 9l-.75-2.25L16 6l2.25-.75z"/><path d="M5 18l.5 1.5L7 20l-1.5.5L5 22l-.5-1.5L3 20l1.5-.5z"/></symbol>
+    <symbol id="ico-dumbbell" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16M18 4v16M2 8h4M18 8h4M2 16h4M18 16h4M6 12h12"/></symbol>
+    <symbol id="ico-target" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+    <symbol id="ico-trend" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></symbol>
+    <symbol id="ico-chevron-r" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></symbol>
+    <symbol id="ico-chevron-l" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></symbol>
+    <symbol id="ico-heart" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></symbol>
+    <symbol id="ico-msg" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></symbol>
+    <symbol id="ico-x" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+    <symbol id="ico-share" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></symbol>
+    <symbol id="ico-pin" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></symbol>
+    <symbol id="ico-clock" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+    <symbol id="ico-fire" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c0 0 5 6 5 11a5 5 0 01-10 0c0-3 2-6 2-6s-2 3-2 5a3 3 0 006 0c0-3-1-10-1-10z"/></symbol>
+    <symbol id="ico-trophy" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M17 5h3v5a3 3 0 01-3 3M7 5H4v5a3 3 0 003 3"/><path d="M7 5a5 5 0 0010 0"/></symbol>
+    <symbol id="ico-settings" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></symbol>
+    <symbol id="ico-plus" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+    <symbol id="ico-check" viewBox="0 0 24 24" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></symbol>
+  </defs>
+</svg>
+
+<!-- helper macro for bottom nav -->
+<template id="nav-tpl">
+  <div class="bottom-nav">
+    <div class="nav-bar">
+      <a class="nav-item FEED_ACTIVE"><svg><use href="#ico-home"/></svg><span class="nav-label">Feed</span></a>
+      <a class="nav-item BLD_ACTIVE"><svg><use href="#ico-zap"/></svg><span class="nav-label">BLD</span></a>
+      <a class="nav-item MATCH_ACTIVE"><svg><use href="#ico-users"/></svg><span class="nav-label">Match</span></a>
+      <a class="nav-item SEARCH_ACTIVE"><svg><use href="#ico-search"/></svg><span class="nav-label">Search</span></a>
+      <a class="nav-item CAL_ACTIVE"><svg><use href="#ico-cal"/></svg><span class="nav-label">Cal</span></a>
+      <a class="nav-item ME_ACTIVE"><svg><use href="#ico-user"/></svg><span class="nav-label">Me</span></a>
+    </div>
+  </div>
+</template>
+
+<div class="page-wrapper">
+
+  <!-- ═══ SCREEN 1 — FEED ══════════════════════════════════ -->
+  <div>
+    <div class="screen">
+      <div class="screen-inner">
+        <!-- header -->
+        <div class="glass-header">
+          <div class="header-row">
+            <div class="page-title">
+              <h1 class="bebas gradient-text" style="font-size:32px">BLD</h1>
+              <p style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:3px;text-transform:uppercase">Community Feed</p>
+            </div>
+            <div style="position:relative">
+              <button class="notif-btn"><svg><use href="#ico-bell"/></svg></button>
+              <div class="notif-dot">3</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="scroll-area">
+          <!-- stories -->
+          <div class="stories">
+            <div class="story-item">
+              <div class="story-add">+</div>
+              <span class="story-name">You</span>
+            </div>
+            <div class="story-item"><div class="story-ring"><div class="story-inner"><div class="story-avatar"></div></div></div><span class="story-name">Emma</span></div>
+            <div class="story-item"><div class="story-ring"><div class="story-inner"><div class="story-avatar"></div></div></div><span class="story-name">Jake</span></div>
+            <div class="story-item"><div class="story-ring"><div class="story-inner"><div class="story-avatar"></div></div></div><span class="story-name">Olivia</span></div>
+            <div class="story-item"><div class="story-ring"><div class="story-inner"><div class="story-avatar"></div></div></div><span class="story-name">Ryan</span></div>
+            <div class="story-item"><div class="story-ring"><div class="story-inner"><div class="story-avatar"></div></div></div><span class="story-name">Mia</span></div>
+          </div>
+
+          <!-- masonry -->
+          <div class="masonry">
+            <div class="masonry-col">
+              <!-- post 1 -->
+              <div class="post-card">
+                <div class="post-img" style="aspect-ratio:3/4">
+                  <img src="https://images.unsplash.com/photo-1750521280541-bbf9d813a890?w=400&q=80" style="height:100%"/>
+                  <div class="overlay"></div>
+                  <div class="streak-badge">🔥 47</div>
+                  <div class="user-badge">
+                    <img src="https://images.unsplash.com/photo-1758875568800-29fb434c7b17?w=60&q=80"/>
+                    <span>@sarahlifts</span>
+                  </div>
+                </div>
+                <div class="post-body">
+                  <p class="post-caption">Crushed leg day 💪 New PR — 225lbs x 8!</p>
+                  <div class="post-actions">
+                    <div class="action-group">
+                      <button class="action-btn"><svg><use href="#ico-heart"/></svg>234</button>
+                      <button class="action-btn"><svg><use href="#ico-msg"/></svg>18</button>
+                    </div>
+                    <button class="action-btn"><svg><use href="#ico-share"/></svg></button>
+                  </div>
+                </div>
+              </div>
+              <!-- post 3 -->
+              <div class="post-card">
+                <div class="post-img" style="aspect-ratio:1">
+                  <img src="https://images.unsplash.com/photo-1738523686534-7055df5858d6?w=400&q=80" style="height:100%"/>
+                  <div class="overlay"></div>
+                  <div class="streak-badge">🔥 21</div>
+                  <div class="user-badge"><span style="font-size:9px;color:rgba(255,255,255,0.8);font-weight:600">@emmafits</span></div>
+                </div>
+                <div class="post-body">
+                  <p class="post-caption">Morning cardio before the city wakes up ☀️</p>
+                  <div class="post-actions">
+                    <div class="action-group">
+                      <button class="action-btn"><svg><use href="#ico-heart"/></svg>145</button>
+                      <button class="action-btn"><svg><use href="#ico-msg"/></svg>9</button>
+                    </div>
+                    <button class="action-btn"><svg><use href="#ico-share"/></svg></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="masonry-col">
+              <!-- post 2 -->
+              <div class="post-card">
+                <div class="post-img" style="aspect-ratio:1">
+                  <img src="https://images.unsplash.com/photo-1669323149885-6bda5714e85b?w=400&q=80" style="height:100%"/>
+                  <div class="overlay"></div>
+                  <div class="streak-badge">🔥 89</div>
+                  <div class="user-badge"><span style="font-size:9px;color:rgba(255,255,255,0.8);font-weight:600">@marcusfitness</span></div>
+                </div>
+                <div class="post-body">
+                  <p class="post-caption">Accountability partners make all the diff 🔥</p>
+                  <div class="post-actions">
+                    <div class="action-group">
+                      <button class="action-btn"><svg><use href="#ico-heart"/></svg>567</button>
+                      <button class="action-btn"><svg><use href="#ico-msg"/></svg>43</button>
+                    </div>
+                    <button class="action-btn"><svg><use href="#ico-share"/></svg></button>
+                  </div>
+                </div>
+              </div>
+              <!-- post 4 -->
+              <div class="post-card">
+                <div class="post-img" style="aspect-ratio:3/4">
+                  <img src="https://images.unsplash.com/photo-1750521280541-bbf9d813a890?w=400&q=80" style="height:100%"/>
+                  <div class="overlay"></div>
+                  <div class="streak-badge">🔥 63</div>
+                  <div class="user-badge"><span style="font-size:9px;color:rgba(255,255,255,0.8);font-weight:600">@ryantrains</span></div>
+                </div>
+                <div class="post-body">
+                  <p class="post-caption">Back day was absolutely INSANE 🏋️</p>
+                  <div class="post-actions">
+                    <div class="action-group">
+                      <button class="action-btn"><svg><use href="#ico-heart"/></svg>389</button>
+                      <button class="action-btn"><svg><use href="#ico-msg"/></svg>27</button>
+                    </div>
+                    <button class="action-btn"><svg><use href="#ico-share"/></svg></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-nav"><div class="nav-bar">
+        <a class="nav-item active"><svg><use href="#ico-home"/></svg><span class="nav-label">Feed</span></a>
+        <a class="nav-item"><svg><use href="#ico-zap"/></svg><span class="nav-label">BLD</span></a>
+        <a class="nav-item"><svg><use href="#ico-users"/></svg><span class="nav-label">Match</span></a>
+        <a class="nav-item"><svg><use href="#ico-search"/></svg><span class="nav-label">Search</span></a>
+        <a class="nav-item"><svg><use href="#ico-cal"/></svg><span class="nav-label">Cal</span></a>
+        <a class="nav-item"><svg><use href="#ico-user"/></svg><span class="nav-label">Me</span></a>
+      </div></div>
+    </div>
+    <p class="screen-label">01 — FEED</p>
+  </div>
+
+  <!-- ═══ SCREEN 2 — BLD AI ═════════════════════════════════ -->
+  <div>
+    <div class="screen">
+      <div class="screen-inner">
+        <div class="glass-header">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:3px">
+            <div style="width:30px;height:30px;border-radius:10px;background:rgba(26,108,255,0.2);border:1px solid rgba(26,108,255,0.35);box-shadow:0 0 12px rgba(26,108,255,0.3);display:flex;align-items:center;justify-content:center"><svg width="16" height="16" style="stroke:#4d8fff;fill:none"><use href="#ico-sparkles"/></svg></div>
+            <h1 class="bebas gradient-text" style="font-size:36px">BLD AI</h1>
+          </div>
+          <p style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:2px">Let AI build your perfect gym split</p>
+        </div>
+        <div class="scroll-area" style="padding:0 16px 16px">
+          <!-- hero -->
+          <div class="hero-card" style="margin:14px 0">
+            <div class="hero-glow"></div>
+            <div class="hero-content">
+              <div class="hero-icon"><svg><use href="#ico-sparkles"/></svg></div>
+              <div class="hero-text">
+                <h3>AI-Powered Training</h3>
+                <p>Our AI analyzes your goals, experience, and schedule to create the perfect workout plan.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- goals -->
+          <p class="label-caps section-title" style="margin-bottom:10px">Select Your Goal</p>
+          <div class="goal-grid" style="margin-bottom:18px">
+            <div class="goal-btn active">
+              <div class="goal-icon" style="background:linear-gradient(135deg,#2563eb,#3b82f6)"><svg><use href="#ico-dumbbell"/></svg></div>
+              <p class="goal-label">Build Strength</p>
+            </div>
+            <div class="goal-btn">
+              <div class="goal-icon" style="background:linear-gradient(135deg,#4f46e5,#6366f1)"><svg><use href="#ico-target"/></svg></div>
+              <p class="goal-label">Gain Muscle</p>
+            </div>
+            <div class="goal-btn">
+              <div class="goal-icon" style="background:linear-gradient(135deg,#0891b2,#06b6d4)"><svg><use href="#ico-trend"/></svg></div>
+              <p class="goal-label">Endurance</p>
+            </div>
+            <div class="goal-btn">
+              <div class="goal-icon" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6)"><svg><use href="#ico-zap"/></svg></div>
+              <p class="goal-label">Athletic</p>
+            </div>
+          </div>
+
+          <!-- days -->
+          <p class="label-caps" style="margin-bottom:10px">Days Per Week</p>
+          <div class="days-row" style="margin-bottom:18px">
+            <button class="day-btn">3</button>
+            <button class="day-btn active">4</button>
+            <button class="day-btn">5</button>
+            <button class="day-btn">6</button>
+          </div>
+
+          <!-- generate -->
+          <button class="generate-btn" style="margin-bottom:20px">
+            <svg><use href="#ico-sparkles"/></svg>Generate My Split
+          </button>
+
+          <!-- splits -->
+          <p class="label-caps" style="margin-bottom:10px">Popular Splits</p>
+          <div class="split-item"><div><p class="split-name">Push Pull Legs</p><p class="split-meta">6 days/week · Classic bodybuilding split</p><span class="split-badge">Intermediate</span></div><svg width="16" height="16" style="stroke:rgba(255,255,255,0.25);fill:none;flex-shrink:0"><use href="#ico-chevron-r"/></svg></div>
+          <div class="split-item"><div><p class="split-name">Upper Lower</p><p class="split-meta">4 days/week · Balanced strength & hypertrophy</p><span class="split-badge">Beginner</span></div><svg width="16" height="16" style="stroke:rgba(255,255,255,0.25);fill:none;flex-shrink:0"><use href="#ico-chevron-r"/></svg></div>
+          <div class="split-item"><div><p class="split-name">Arnold Split</p><p class="split-meta">6 days/week · Legendary muscle building</p><span class="split-badge">Advanced</span></div><svg width="16" height="16" style="stroke:rgba(255,255,255,0.25);fill:none;flex-shrink:0"><use href="#ico-chevron-r"/></svg></div>
+        </div>
+      </div>
+      <div class="bottom-nav"><div class="nav-bar">
+        <a class="nav-item"><svg><use href="#ico-home"/></svg><span class="nav-label">Feed</span></a>
+        <a class="nav-item active"><svg><use href="#ico-zap"/></svg><span class="nav-label">BLD</span></a>
+        <a class="nav-item"><svg><use href="#ico-users"/></svg><span class="nav-label">Match</span></a>
+        <a class="nav-item"><svg><use href="#ico-search"/></svg><span class="nav-label">Search</span></a>
+        <a class="nav-item"><svg><use href="#ico-cal"/></svg><span class="nav-label">Cal</span></a>
+        <a class="nav-item"><svg><use href="#ico-user"/></svg><span class="nav-label">Me</span></a>
+      </div></div>
+    </div>
+    <p class="screen-label">02 — BLD AI</p>
+  </div>
+
+  <!-- ═══ SCREEN 3 — MATCH ══════════════════════════════════ -->
+  <div>
+    <div class="screen">
+      <div class="screen-inner" style="padding-bottom:140px">
+        <div class="glass-header">
+          <h1 class="bebas gradient-text" style="font-size:36px">Match</h1>
+          <p style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:2px">Find your perfect gym buddy</p>
+        </div>
+        <div class="today-bar"><span>Today's Matches</span><span class="new-badge">5 New</span></div>
+        <div class="match-card" style="margin:10px 14px 0">
+          <div class="match-photo">
+            <img src="https://images.unsplash.com/photo-1669323149885-6bda5714e85b?w=600&q=80"/>
+            <div class="grad"></div>
+            <div class="match-pct">94% Match</div>
+            <div class="match-name-area">
+              <div class="match-name">Alex Rivera, 26</div>
+              <div class="match-loc"><svg><use href="#ico-pin"/></svg>0.8 mi away</div>
+            </div>
+          </div>
+          <div class="match-details">
+            <div class="match-gym">
+              <div class="match-gym-icon"><svg><use href="#ico-dumbbell"/></svg></div>
+              <div class="match-gym-info"><p>Trains At</p><p>Gold's Gym Downtown</p></div>
+            </div>
+            <p class="match-bio">Looking for a consistent workout partner for morning sessions 🌅</p>
+            <div class="tags">
+              <span class="tag">Strength Training</span><span class="tag">Powerlifting</span><span class="tag">Cardio</span>
+            </div>
+            <div class="tags">
+              <span class="tag blue">Morning</span><span class="tag blue">Evening</span>
+            </div>
+          </div>
+        </div>
+        <div class="match-actions">
+          <button class="action-circle sm x"><svg width="26" height="26" stroke="red"><use href="#ico-x"/></svg></button>
+          <button class="action-circle lg"><svg><use href="#ico-heart"/></svg></button>
+          <button class="action-circle sm msg"><svg width="24" height="24"><use href="#ico-msg"/></svg></button>
+        </div>
+      </div>
+      <div class="bottom-nav"><div class="nav-bar">
+        <a class="nav-item"><svg><use href="#ico-home"/></svg><span class="nav-label">Feed</span></a>
+        <a class="nav-item"><svg><use href="#ico-zap"/></svg><span class="nav-label">BLD</span></a>
+        <a class="nav-item active"><svg><use href="#ico-users"/></svg><span class="nav-label">Match</span></a>
+        <a class="nav-item"><svg><use href="#ico-search"/></svg><span class="nav-label">Search</span></a>
+        <a class="nav-item"><svg><use href="#ico-cal"/></svg><span class="nav-label">Cal</span></a>
+        <a class="nav-item"><svg><use href="#ico-user"/></svg><span class="nav-label">Me</span></a>
+      </div></div>
+    </div>
+    <p class="screen-label">03 — MATCH</p>
+  </div>
+
+  <!-- ═══ SCREEN 4 — SEARCH ════════════════════════════════ -->
+  <div>
+    <div class="screen">
+      <div class="screen-inner">
+        <div class="glass-header">
+          <h1 class="bebas gradient-text" style="font-size:36px">Search</h1>
+          <p style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:2px">Discover gyms, workouts & people</p>
+        </div>
+        <div class="scroll-area" style="padding:0 16px 16px">
+          <div style="position:relative;margin:14px 0">
+            <svg class="search-icon"><use href="#ico-search"/></svg>
+            <input class="search-input" placeholder="Search workouts, gyms, people..."/>
+          </div>
+          <p class="label-caps" style="margin-bottom:10px">Categories</p>
+          <div class="cat-grid" style="margin-bottom:18px">
+            <div class="cat-card"><div class="cat-icon"><svg><use href="#ico-dumbbell"/></svg></div><p class="cat-label">Workouts</p><p class="cat-count">2.3k results</p></div>
+            <div class="cat-card"><div class="cat-icon"><svg><use href="#ico-users"/></svg></div><p class="cat-label">Gym Buddies</p><p class="cat-count">890 results</p></div>
+            <div class="cat-card"><div class="cat-icon"><svg><use href="#ico-pin"/></svg></div><p class="cat-label">Gyms Near Me</p><p class="cat-count">47 results</p></div>
+            <div class="cat-card"><div class="cat-icon"><svg><use href="#ico-clock"/></svg></div><p class="cat-label">Schedules</p><p class="cat-count">156 results</p></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <svg width="14" height="14" style="stroke:#4d8fff;fill:none"><use href="#ico-trend"/></svg>
+            <p class="label-caps">Trending Now</p>
+          </div>
+          <div class="trending-tags" style="margin-bottom:18px">
+            <span class="trending-tag">Push Pull Legs</span>
+            <span class="trending-tag">Morning Workouts</span>
+            <span class="trending-tag">Gold's Gym</span>
+            <span class="trending-tag">Powerlifting</span>
+            <span class="trending-tag">Crossfit</span>
+          </div>
+          <p class="label-caps" style="margin-bottom:10px">Recent Searches</p>
+          <div class="recent-item"><div class="recent-icon"><svg><use href="#ico-pin"/></svg></div><div><p class="recent-name">Gold's Gym Downtown</p><p class="recent-detail">0.8 mi away</p></div><button class="recent-x">×</button></div>
+          <div class="recent-item"><div class="recent-icon"><svg><use href="#ico-users"/></svg></div><div><p class="recent-name">Alex Rivera</p><p class="recent-detail">@alexfit</p></div><button class="recent-x">×</button></div>
+          <div class="recent-item"><div class="recent-icon"><svg><use href="#ico-dumbbell"/></svg></div><div><p class="recent-name">Upper Lower Split</p><p class="recent-detail">4 days/week</p></div><button class="recent-x">×</button></div>
+        </div>
+      </div>
+      <div class="bottom-nav"><div class="nav-bar">
+        <a class="nav-item"><svg><use href="#ico-home"/></svg><span class="nav-label">Feed</span></a>
+        <a class="nav-item"><svg><use href="#ico-zap"/></svg><span class="nav-label">BLD</span></a>
+        <a class="nav-item"><svg><use href="#ico-users"/></svg><span class="nav-label">Match</span></a>
+        <a class="nav-item active"><svg><use href="#ico-search"/></svg><span class="nav-label">Search</span></a>
+        <a class="nav-item"><svg><use href="#ico-cal"/></svg><span class="nav-label">Cal</span></a>
+        <a class="nav-item"><svg><use href="#ico-user"/></svg><span class="nav-label">Me</span></a>
+      </div></div>
+    </div>
+    <p class="screen-label">04 — SEARCH</p>
+  </div>
+
+  <!-- ═══ SCREEN 5 — CALENDAR ══════════════════════════════ -->
+  <div>
+    <div class="screen">
+      <div class="screen-inner">
+        <div class="glass-header">
+          <h1 class="bebas gradient-text" style="font-size:36px">Calendar</h1>
+          <p style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:2px">Your training schedule</p>
+        </div>
+        <div class="scroll-area" style="padding:14px 16px 16px">
+          <!-- calendar card -->
+          <div class="card" style="padding:14px;margin-bottom:12px">
+            <div class="cal-nav">
+              <button class="cal-nav-btn"><svg><use href="#ico-chevron-l"/></svg></button>
+              <span class="cal-month">MARCH 2026</span>
+              <button class="cal-nav-btn"><svg><use href="#ico-chevron-r"/></svg></button>
+            </div>
+            <div class="cal-days-header">
+              <div class="cal-day-label">Mon</div><div class="cal-day-label">Tue</div><div class="cal-day-label">Wed</div>
+              <div class="cal-day-label">Thu</div><div class="cal-day-label">Fri</div><div class="cal-day-label">Sat</div><div class="cal-day-label">Sun</div>
+            </div>
+            <div class="cal-grid">
+              <div class="cal-day">2</div>
+              <div class="cal-day done">3<div class="cal-check"><svg><use href="#ico-check"/></svg></div></div>
+              <div class="cal-day">4</div>
+              <div class="cal-day done">5<div class="cal-check"><svg><use href="#ico-check"/></svg></div></div>
+              <div class="cal-day">6</div>
+              <div class="cal-day done">7<div class="cal-check"><svg><use href="#ico-check"/></svg></div></div>
+              <div class="cal-day">8</div>
+              <div class="cal-day today">9<div class="cal-dot"></div></div>
+              <div class="cal-day">10</div>
+              <div class="cal-day has-workout">11<div class="cal-dot"></div></div>
+              <div class="cal-day">12</div>
+              <div class="cal-day has-workout">13<div class="cal-dot"></div></div>
+              <div class="cal-day">14</div>
+              <div class="cal-day">15</div>
+            </div>
+          </div>
+          <!-- stats -->
+          <div class="stats-row" style="margin-bottom:16px">
+            <div class="stat-box"><div class="stat-val">12</div><div class="stat-lbl">This Month</div></div>
+            <div class="stat-box accent"><div class="stat-val">3</div><div class="stat-lbl">Streak</div></div>
+            <div class="stat-box"><div class="stat-val">156</div><div class="stat-lbl">Total</div></div>
+          </div>
+          <!-- workout -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <p class="label-caps">Today's Workout</p>
+            <span style="font-size:11px;color:#4d8fff;font-weight:600">2/5 Done</span>
+          </div>
+          <div class="card" style="padding:14px">
+            <div class="workout-header">
+              <span class="workout-title">Push Day</span>
+              <button class="add-btn"><svg><use href="#ico-plus"/></svg></button>
+            </div>
+            <div class="exercise-item done"><div class="ex-check done"><svg><use href="#ico-check"/></svg></div><span class="ex-name done">Bench Press</span><span class="ex-sets">4x8</span></div>
+            <div class="exercise-item done"><div class="ex-check done"><svg><use href="#ico-check"/></svg></div><span class="ex-name done">Overhead Press</span><span class="ex-sets">3x10</span></div>
+            <div class="exercise-item"><div class="ex-check"></div><span class="ex-name">Incline Dumbbell Press</span><span class="ex-sets">3x12</span></div>
+            <div class="exercise-item"><div class="ex-check"></div><span class="ex-name">Lateral Raises</span><span class="ex-sets">3x15</span></div>
+            <div class="exercise-item"><div class="ex-check"></div><span class="ex-name">Tricep Pushdowns</span><span class="ex-sets">3x12</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-nav"><div class="nav-bar">
+        <a class="nav-item"><svg><use href="#ico-home"/></svg><span class="nav-label">Feed</span></a>
+        <a class="nav-item"><svg><use href="#ico-zap"/></svg><span class="nav-label">BLD</span></a>
+        <a class="nav-item"><svg><use href="#ico-users"/></svg><span class="nav-label">Match</span></a>
+        <a class="nav-item"><svg><use href="#ico-search"/></svg><span class="nav-label">Search</span></a>
+        <a class="nav-item active"><svg><use href="#ico-cal"/></svg><span class="nav-label">Cal</span></a>
+        <a class="nav-item"><svg><use href="#ico-user"/></svg><span class="nav-label">Me</span></a>
+      </div></div>
+    </div>
+    <p class="screen-label">05 — CALENDAR</p>
+  </div>
+
+  <!-- ═══ SCREEN 6 — PROFILE ═══════════════════════════════ -->
+  <div>
+    <div class="screen">
+      <div class="screen-inner">
+        <div class="scroll-area">
+          <div class="profile-banner">
+            <div class="banner-glow1"></div>
+            <div class="banner-glow2"></div>
+          </div>
+          <div class="profile-info">
+            <div class="profile-top">
+              <div class="profile-avatar-wrap">
+                <img class="profile-avatar" src="https://images.unsplash.com/photo-1669323149885-6bda5714e85b?w=200&q=80"/>
+                <div class="avatar-flame"><svg><use href="#ico-fire"/></svg></div>
+              </div>
+              <div class="profile-name">
+                <h1>Jordan Smith</h1>
+                <p>@jordanfitness</p>
+              </div>
+            </div>
+            <div class="profile-btns">
+              <button class="edit-btn">Edit Profile</button>
+              <button class="icon-btn"><svg><use href="#ico-share"/></svg></button>
+              <button class="icon-btn"><svg><use href="#ico-settings"/></svg></button>
+            </div>
+            <div class="followers-row">
+              <div class="follower-stat"><div class="follower-val">234</div><div class="follower-lbl">Followers</div></div>
+              <div class="follower-divider"></div>
+              <div class="follower-stat"><div class="follower-val">189</div><div class="follower-lbl">Following</div></div>
+              <div class="follower-divider"></div>
+              <div class="follower-stat"><div class="follower-val">42</div><div class="follower-lbl">Gym Buddies</div></div>
+            </div>
+          </div>
+          <div style="padding:0 16px 80px">
+            <p class="label-caps" style="margin-bottom:10px">Your Stats</p>
+            <div class="stat-grid" style="margin-bottom:18px">
+              <div class="stat-card"><div class="stat-icon" style="background:linear-gradient(135deg,#ea580c,#ef4444)"><svg><use href="#ico-fire"/></svg></div><p class="stat-card-label">Current Streak</p><p class="stat-card-val">47 Days</p></div>
+              <div class="stat-card"><div class="stat-icon" style="background:linear-gradient(135deg,#ca8a04,#ea580c)"><svg><use href="#ico-trophy"/></svg></div><p class="stat-card-label">Total Workouts</p><p class="stat-card-val">234</p></div>
+              <div class="stat-card"><div class="stat-icon" style="background:linear-gradient(135deg,#059669,#22c55e)"><svg><use href="#ico-trend"/></svg></div><p class="stat-card-label">PR's This Month</p><p class="stat-card-val">8</p></div>
+              <div class="stat-card"><div class="stat-icon" style="background:linear-gradient(135deg,#2563eb,#4f46e5)"><svg><use href="#ico-cal"/></svg></div><p class="stat-card-label">Member Since</p><p class="stat-card-val">Jan 2025</p></div>
+            </div>
+            <p class="label-caps" style="margin-bottom:10px">Achievements</p>
+            <div class="achievements-grid" style="margin-bottom:18px">
+              <div class="achievement"><span>🔥</span><p>100 Day Streak</p></div>
+              <div class="achievement unlocked"><span>💪</span><p>First PR</p></div>
+              <div class="achievement unlocked"><span>⭐</span><p>50 Workouts</p></div>
+              <div class="achievement unlocked"><span>🤝</span><p>Gym Buddy</p></div>
+              <div class="achievement"><span>🌅</span><p>Early Bird</p></div>
+              <div class="achievement unlocked"><span>🦉</span><p>Night Owl</p></div>
+            </div>
+            <p class="label-caps" style="margin-bottom:10px">Recent Activity</p>
+            <div class="activity-item"><div class="activity-icon" style="background:rgba(26,108,255,0.12)">💪</div><div><p class="activity-title">Completed Push Day</p><p class="activity-time">2 hours ago</p></div></div>
+            <div class="activity-item"><div class="activity-icon" style="background:rgba(234,179,8,0.12)">🏆</div><div><p class="activity-title">Unlocked Night Owl</p><p class="activity-time">1 day ago</p></div></div>
+            <div class="activity-item"><div class="activity-icon" style="background:rgba(34,197,94,0.12)">🎯</div><div><p class="activity-title">New PR: Bench Press 225lbs</p><p class="activity-time">2 days ago</p></div></div>
+            <div class="activity-item"><div class="activity-icon" style="background:rgba(168,85,247,0.12)">🤝</div><div><p class="activity-title">Matched with Alex Rivera</p><p class="activity-time">3 days ago</p></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-nav"><div class="nav-bar">
+        <a class="nav-item"><svg><use href="#ico-home"/></svg><span class="nav-label">Feed</span></a>
+        <a class="nav-item"><svg><use href="#ico-zap"/></svg><span class="nav-label">BLD</span></a>
+        <a class="nav-item"><svg><use href="#ico-users"/></svg><span class="nav-label">Match</span></a>
+        <a class="nav-item"><svg><use href="#ico-search"/></svg><span class="nav-label">Search</span></a>
+        <a class="nav-item"><svg><use href="#ico-cal"/></svg><span class="nav-label">Cal</span></a>
+        <a class="nav-item active"><svg><use href="#ico-user"/></svg><span class="nav-label">Me</span></a>
+      </div></div>
+    </div>
+    <p class="screen-label">06 — PROFILE</p>
+  </div>
+
+</div>
+</body>
+</html>
